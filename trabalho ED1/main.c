@@ -47,9 +47,7 @@ Filme* criarFilme() {
 
 //Essa função imprime os dados de um filme.
 void imprimirFilme(Filme* f) {
-    printf("\nNome: %s", f->nome);
-    printf("\nAno: %d", f->ano);
-    printf("\nID: %d", f->id);
+    printf("\nNome: %s | Ano: %d | Id: %d", f->nome, f->ano,f->id);
 }
 
 void alterarNome(Filme* f) {
@@ -83,18 +81,33 @@ void alterarAno(Filme* f) {
             scanf("%d", &aux);
             f->ano = aux;
             return; // Filme encontrado e ano alterado, sair da função
-        } else {
+        } else
             printf("\nFilme nao encontrado ou nao existe.");
-        }
     }
 }
-int main() {
+
+int retornaAno(Filme* f){
+    int num;
+    printf("\nDigite o ID do filme que deseja saber o ano: ");
+    scanf("%d", &num);
+    fflush(stdin);
+    for (Filme* p=f;p!=NULL;p=p->seq->filme){
+        if (num == p->id) {
+            return p->ano;
+        } else
+            printf("\nFilme nao encontrado ou nao existe.");
+        
+    }
+}
+int main(){
     Filme* f = criarFilme();
     imprimirFilme(f);
-    alterarNome(f);
-    imprimirFilme(f);
-    alterarAno(f);
-    imprimirFilme(f);
+    //alterarNome(f);
+    //imprimirFilme(f);
+    //alterarAno(f);
+    //imprimirFilme(f);
+    //int ano=retornaAno(f);
+    //printf("\nAno do filme %d: %d", f->id, ano);
     free(f);
     return 0;
 }

@@ -47,43 +47,77 @@ Filme* criarFilme() {
 void imprimirFilme(Filme* f) {
     printf("\nNome: %s | Ano: %d | Id: %d", f->nome, f->ano,f->id);
 }
-void alterarNome(Filme* f, int num) {
-    for (Filme* p = f; p != NULL; p = p->seq->filme) {
-        if (num == p->id) {
+void alterarNome(Meio* m, int num, Seq* s) {
+    Meio* p = m;
+    for (; p != NULL; p = p->prox) {
+        if (num == p->filme->id) {
             char aux[v];
             printf("\nDigite o novo nome do filme %d: ", num);
             if (fgets(aux, v, stdin) == NULL) {
                 printf("Erro ao ler o nome do filme.\n");
-                free(f);
                 exit(1);
             }
             aux[strcspn(aux, "\n")] = '\0';
-            strcpy(p->nome, aux);
-            return;
+            strcpy(p->filme->nome, aux);
+            return; // Filme encontrado e nome alterado, sair da função
+        }
+        else {
+            Seq* auxSeq = p->filme->seq;
+            for (; auxSeq != NULL; auxSeq = auxSeq->prox) {
+                if (num == auxSeq->filme->id) {
+                    char temp[v];
+                    printf("\nDigite o novo nome do filme %d: ", num);
+                    if (fgets(temp, v, stdin) == NULL) {
+                        printf("Erro ao ler o nome do filme.\n");
+                        exit(1);
+                    }
+                    temp[strcspn(temp, "\n")] = '\0';
+                    strcpy(auxSeq->filme->nome, temp);
+                    return; // Filme encontrado e nome alterado, sair da função
+                }
+            }
         }
     }
-    printf("\nFilme nao encontrado ou nao existe.");
+
+    printf("\nFilme não encontrado ou não existe.");
 }
-void alterarAno(Filme* f, int num) {
-    for (Filme* p=f;p!=NULL;p=p->seq->filme) {
-        if (num == p->id) {
+
+void alterarAno(Meio* m, int num, Seq* s) {
+    Meio* p = m;
+    for (; p != NULL; p = p->prox) {
+        if (num == p->filme->id) {
             int aux;
             printf("\nDigite o novo ano do filme %d: ", num);
             scanf("%d", &aux);
             getchar();
-            f->ano = aux;
+            p->filme->ano = aux;
             return; // Filme encontrado e ano alterado, sair da função
-        } else
-            printf("\nFilme nao encontrado ou nao existe.");
+        }
+        else {
+            Seq* auxSeq = p->filme->seq;
+            for (; auxSeq != NULL; auxSeq = auxSeq->prox) {
+                if (num == auxSeq->filme->id) {
+                    int temp;
+                    printf("\nDigite o novo ano do filme %d: ", num);
+                    scanf("%d", &temp);
+                    getchar();
+                    auxSeq->filme->ano = temp;
+                    return; // Filme encontrado e ano alterado, sair da função
+                }
+            }
+        }
     }
+
+    printf("\nFilme não encontrado ou não existe.");
 }
-void alteradado(Meio* m, Filme* f) {
+
+void alteradado(Meio* m,Seq* s, Filme* f) {
     int num;
     printf("\nDigite o ID do filme que deseja alterar: ");
     scanf("%d", &num);
     getchar();
-    alterarNome(f, num);
-    alterarAno(f, num);
+    alterarNome(m, num, s);
+    alterarAno(m, num, s);
 }
 int retornaAno(Filme* f){
     int num;
@@ -132,13 +166,15 @@ void exibirLista(Meio* m) {
         printf("Nome: %s | Ano: %d | Id: %d\n", atual->filme->nome, atual->filme->ano, atual->filme->id);
     }
 }
-void adicionarFilmeUsuario(Meio** m, int id) {
+void adicionarFilmeUsuario(Meio** m, int id, Topo* t) {
     Filme* novoFilme = criarFilme();
     inserirFilmeOrdenado(m, novoFilme, id);
     printf("\nFilme adicionado com sucesso.");
+    t->n++;
+    printf("%d", t->n);
 }
 
-void removerFilme(Meio** m) {
+void removerFilme(Meio** m, Topo* t) {
     int num;
     printf("\nDigite o ID do filme que deseja remover: ");
     scanf("%d", &num);
@@ -152,6 +188,7 @@ void removerFilme(Meio** m) {
             Seq* seqAtual = atual->filme->seq;
             while (seqAtual != NULL) {
                 Seq* seqProx = seqAtual->prox;
+                t->n--;
                 free(seqAtual);
                 seqAtual = seqProx;
             }
@@ -159,13 +196,16 @@ void removerFilme(Meio** m) {
             // Remover o filme da lista principal
             if (anterior == NULL) {
                 *m = atual->prox;
+                t->n--;
             } else {
                 anterior->prox = atual->prox;
+                t->n--;
             }
 
             free(atual->filme);
             free(atual);
             printf("\nFilme removido com sucesso.");
+            printf("%d", t->n);
             return;
         }
     }
@@ -180,7 +220,7 @@ int estavazia(Seq** l){
     return (*l==NULL);
 }
 
-void inserirFilmeSequencia(Meio** m) {
+void inserirFilmeSequencia(Meio** m, Topo* t) {
     int num;
     printf("\nDigite o ID do filme que inicia a sequencia: ");
     scanf("%d", &num);
@@ -205,7 +245,10 @@ void inserirFilmeSequencia(Meio** m) {
                 ultimaSeq->prox = novaSeq;
                 novaSeq->ant = ultimaSeq;
             }
+            t->n++;
+            printf("%d", t->n);
             return;
+            
         }
     }
     printf("Filme com identificador %d não encontrado na sequência.\n", num);
@@ -231,7 +274,7 @@ void imprimirListaSequencia(Meio* m) {
 
     printf("Filme com identificador %d não encontrado na sequência.\n", num);
 }
-void removerFilmeSequencia(Meio** m) {
+void removerFilmeSequencia(Meio** m, Topo* t) {
     int num,n;
     printf("\nDigite o ID do filme que inicia a sequencia: ");
     scanf("%d", &num);
@@ -257,6 +300,8 @@ void removerFilmeSequencia(Meio** m) {
                     }
                     free(seqAtual);
                     printf("Filme com identificador %d removido da sequência.\n", n);
+                    t->n--;
+                    printf("%d", t->n);
                     return;
                 }
             }
@@ -389,28 +434,28 @@ int main() {
 
         switch (opcao) {
             case 1:
-                adicionarFilmeUsuario(&topo.prim, topo.n);
+                adicionarFilmeUsuario(&topo.prim, topo.n, &topo);
                 break;
             case 2:
                 // Opção 2: Alterar dados de um filme
-                alteradado(topo.prim, topo.prim->filme);
+                alteradado(topo.prim, topo.prim->filme->seq, topo.prim->filme);
                 break;
             case 3:
                 // Opção 3: Remover filme
-                removerFilme(&topo.prim);
+                removerFilme(&topo.prim, &topo);
                 break;
             case 4:
                 // Opção 4: Imprimir lista de filmes
                 exibirLista(topo.prim);
                 break;
             case 5:
-                inserirFilmeSequencia(&topo.prim);
+                inserirFilmeSequencia(&topo.prim, &topo);
                 break;
             case 6:
                 imprimirListaSequencia(topo.prim);
                 break;
             case 7:
-                removerFilmeSequencia(&topo.prim);
+                removerFilmeSequencia(&topo.prim, &topo);
                 break;
             case 8:
                 imprimirFilmeAntecessor(topo.prim);
